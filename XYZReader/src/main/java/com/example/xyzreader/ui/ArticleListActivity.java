@@ -45,10 +45,14 @@ public class ArticleListActivity extends ActionBarActivity implements
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
 
-
-        final View toolbarContainerView = findViewById(R.id.toolbar_container);
-
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
+
+        mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                refresh();
+            }
+        });
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         getLoaderManager().initLoader(0, null, this);
@@ -57,6 +61,8 @@ public class ArticleListActivity extends ActionBarActivity implements
             refresh();
         }
     }
+
+
 
     private void refresh() {
         startService(new Intent(this, UpdaterService.class));
@@ -143,13 +149,6 @@ public class ArticleListActivity extends ActionBarActivity implements
         public void onBindViewHolder(ViewHolder holder, int position) {
             mCursor.moveToPosition(position);
             holder.titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
-            holder.subtitleView.setText(
-                    DateUtils.getRelativeTimeSpanString(
-                            mCursor.getLong(ArticleLoader.Query.PUBLISHED_DATE),
-                            System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
-                            DateUtils.FORMAT_ABBREV_ALL).toString()
-                            + " by "
-                            + mCursor.getString(ArticleLoader.Query.AUTHOR));
             holder.thumbnailView.setImageUrl(
                     mCursor.getString(ArticleLoader.Query.THUMB_URL),
                     ImageLoaderHelper.getInstance(ArticleListActivity.this).getImageLoader());
@@ -165,13 +164,11 @@ public class ArticleListActivity extends ActionBarActivity implements
     public static class ViewHolder extends RecyclerView.ViewHolder {
         public DynamicHeightNetworkImageView thumbnailView;
         public TextView titleView;
-        public TextView subtitleView;
 
         public ViewHolder(View view) {
             super(view);
             thumbnailView = (DynamicHeightNetworkImageView) view.findViewById(R.id.thumbnail);
             titleView = (TextView) view.findViewById(R.id.article_title);
-            subtitleView = (TextView) view.findViewById(R.id.article_subtitle);
         }
     }
 }
